@@ -11,7 +11,37 @@ class AdminController extends Controller
         return view('admin.index');
     }
     public function update(Request $request){
-        return 'frontend update';
+        $request->validate([
+            'max_num' => 'required|integer|min:1',
+            'max_sides' => 'required|integer|min:1'
+         ]);
+
+         $sb = "";
+         $a = ["'max_num'", "'max_sides'"];
+         $k = 0;
+         $dice_file = fopen("../config/dice.php", "r");
+         while(!feof($dice_file)) {
+            $r = trim(fgets($dice_file));
+            for($i=0, $p=0; $i<strlen($r); $i++,$p++){
+                if($k == count($a) || $r[$i] != $a[$k][$p]){
+                    $sb .= $r;
+                    break;
+                }
+                if($p+1 == strlen($a[$k])){
+                    $sb .= "\t".  $a[$k] . " => "
+                        . $request->{substr($a[$k],1,-1)} .",";
+                    $k++;
+                    break;
+                }
+            }
+            $sb .= "\n";
+          }
+         fclose($dice_file);
+         $dice_file = fopen("../config/dice.php", "w");
+         fwrite($dice_file, $sb);
+         fclose($dice_file);
+
+         return redirect()->back();
     }
 
     public function loginIndex(){
@@ -25,7 +55,7 @@ class AdminController extends Controller
         ]);
         if($request->userName != config('admin.userName') ||
              $request->password != config('admin.password')){
-                Session::flash("failed","اسم المستخدم أو كلمة المرور غير صحيحة");
+                Session::flash("failed","User name or password is not corrent");
                 return redirect()->back();
         }
         request()->session()->regenerate();

@@ -11,6 +11,5 @@
       @csrf
       <button>Logout</button>
   </form>
- 
 </body>
 </html>
